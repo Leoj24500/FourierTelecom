@@ -6,8 +6,8 @@
 
 typedef struct {
 
-	uint16_t EMG0_value;
-	uint16_t EMG1_value;
+	uint16_t a;
+	uint16_t b;
 
 
 } Sample_struct;

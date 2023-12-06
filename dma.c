@@ -37,8 +37,8 @@ int timer_config(uint32_t sample_rate)
 
 void adc_config(void)
 {
-	gpio_init(GPIOA, GPIO_MODE_AIN, GPIO_OSPEED_50MHZ, GPIO_PIN_0);
-    gpio_init(GPIOA, GPIO_MODE_AIN, GPIO_OSPEED_50MHZ, GPIO_PIN_1);//
+	gpio_init(GPIOA, GPIO_MODE_AIN, GPIO_OSPEED_50MHZ, GPIO_PIN_3);
+    //gpio_init(GPIOA, GPIO_MODE_AIN, GPIO_OSPEED_50MHZ, GPIO_PIN_1);//
     /* reset ADC */
     adc_deinit(ADC0);
     /* ADC mode config */
@@ -48,11 +48,11 @@ void adc_config(void)
     /* ADC data alignment config */
     adc_data_alignment_config(ADC0, ADC_DATAALIGN_RIGHT);
     /* ADC channel length config */
-    adc_channel_length_config(ADC0, ADC_REGULAR_CHANNEL, 2);    //till 1 eller osäker
+    adc_channel_length_config(ADC0, ADC_REGULAR_CHANNEL, 1);    //till 1 eller osäker
  
     /* ADC inserted channel config */
-    adc_regular_channel_config(ADC0, 0, ADC_CHANNEL_0, ADC_SAMPLETIME_55POINT5); 
-    adc_regular_channel_config(ADC0, 1, ADC_CHANNEL_1, ADC_SAMPLETIME_55POINT5);    //
+    adc_regular_channel_config(ADC0, 0, ADC_CHANNEL_3, ADC_SAMPLETIME_55POINT5); 
+    //adc_regular_channel_config(ADC0, 1, ADC_CHANNEL_1, ADC_SAMPLETIME_55POINT5);    //
    
     /* ADC trigger config */
     adc_external_trigger_source_config(ADC0, ADC_REGULAR_CHANNEL, ADC0_1_EXTTRIG_REGULAR_T1_CH1); 
@@ -128,7 +128,6 @@ uint16_t dataBuffer[FILTERSIZE];
 void DMA0_Channel0_IRQHandler(void)
 {
 	uint16_t* pSend_data;
-
     
 	//If you want to do some transformation it's probably best to first copy the sample data.
 	//Then perform transformation, and then send the transformed data array.

@@ -6,7 +6,7 @@
 
 void rcu_config(void);
 
-
+/*
 //#define MOTOR2DIRECTION GPIO_PIN_4
 #define RANGE 200
 
@@ -15,7 +15,7 @@ void rcu_config(void);
 #define SPEED 450 //period SPEED min på 30 pre
 #define BASE 30 //prescaler
 
-
+*/
 
 
 int main(){
@@ -59,5 +59,4 @@ void rcu_config(void){
 	rcu_periph_clock_enable(RCU_GPIOA);
 	rcu_periph_clock_enable(RCU_GPIOB);
 	rcu_periph_clock_enable(RCU_AF);
-	//tror undre är onödiga
 }

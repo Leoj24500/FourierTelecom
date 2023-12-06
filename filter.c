@@ -13,7 +13,7 @@ void Filter(){
     for (int i = 0; i< FILTERSIZE*2; i++){          
         FilterSum += Filter_data[i];
     }
-    int filterAvrage = FilterSum / (FILTERSIZE);
+    int filterAvrage = FilterSum / (FILTERSIZE*2);
     
     LCD_ShowNum(10,40, filterAvrage, 8, WHITE);
 
