@@ -189,7 +189,7 @@ void Lcd_SetType(int type){
 */
 void Lcd_Init(void)
 {
-	if(!lcd_conf.configured) Lcd_SetType(LCD_INVERTED);
+	if(!lcd_conf.configured) Lcd_SetType(LCD_NORMAL);
 	rcu_periph_clock_enable(RCU_GPIOB);
 	rcu_periph_clock_enable(RCU_GPIOC);
 

@@ -1,62 +1,81 @@
 #include "gd32vf103.h"
-#include "dma.h"
+#include "adc.h"
+#include "eclicw.h"
 #include "lcd.h"
 #include "systick.h"
-#include "filter.h"
 
-void rcu_config(void);
 
+void Interupt(void);
+#define FILTERSIZE 4
+
+volatile int buffert[FILTERSIZE];
+volatile int BuffPlace =0;
+
+void mt40k_init(void (*pISR)(void)){
+   eclicw_enable(CLIC_INT_TMR, 1, 1, pISR);
+   // Set the timer expier (compar) value to 675 (27Mhz/40kHz).
+   *( volatile uint64_t * )( TIMER_CTRL_ADDR + TIMER_MTIMECMP ) = 843;
+   // Reset the timer value to zero.
+   *( volatile uint64_t * )( TIMER_CTRL_ADDR + TIMER_MTIME ) = 0;
+}
 /*
-//#define MOTOR2DIRECTION GPIO_PIN_4
-#define RANGE 200
+void lp(void){
+    static int x=0;
 
-#define IMAX 1000
+    // Be aware of possible spirous int updating mtimecmp...
+    // LSW = -1; MSW = update; LSW = update, in this case safe.
+    *( volatile uint64_t * )( TIMER_CTRL_ADDR + TIMER_MTIMECMP )+=675;
 
-#define SPEED 450 //period SPEED min på 30 pre
-#define BASE 30 //prescaler
-
+    // Calcylate next output value...
+    DAC0set(x++%2?4000:0);
+    l88mem(7,x);
+}
 */
+/*
+void lp(void){
+    static int x=0, xp=0, y=0, yp=0;
+    static int g=0b0010001100000000; //0.1367287359(<<16)
+    static int p=0b1011100111111110; //0.7265425280(<<16)
 
+    // Be aware of possible spirous int updating mtimecmp...
+    // LSW = -1; MSW = update; LSW = update, in this case safe.
+    *( volatile uint64_t * )( TIMER_CTRL_ADDR + TIMER_MTIMECMP )+=675;
 
-int main(){
+    // Calcylate next output value...
+    xp=x; yp=y;
+    x = ((adc_regular_data_read(ADC0)-2048))*g;
+    y = (x+xp)+(int)(((int64_t)yp*(int64_t)p)>>16);
+    DAC0set((y>>16)+2048);              // ...and present it to hw-driver.
 
-	//Start of program
+    adc_software_trigger_enable(ADC0, ADC_REGULAR_CHANNEL);
+}*/
 
-	uint16_t sample_data[1000];
-    rcu_config();
-	Lcd_Init();
-	LCD_Clear(RED);
+int main(void){
+    ADC3powerUpInit(1);                     // Initialize ADC0, Ch3 & Ch16
+    mt40k_init(&Interupt);                        // Initialize mtime 40kHz
+    Lcd_SetType(LCD_INVERTED);                // or use LCD_INVERTED!
+    Lcd_Init();
+    LCD_Clear(RED);
+    LCD_Wait_On_Queue();
+    eclic_global_interrupt_enable();        // !!!!! Enable Interrupt !!!!!
 
-	timer_config(20);
-	adc_config();
+    while (1) {
+        //if (BuffPlace > FILTERSIZE){
+            //BuffPlace = 0;
+            LCD_ShowNum(10,10,1,5,WHITE);
+            //LCD_Wait_On_Queue();
+            
+        //}
+    }
+}
+__attribute__( ( interrupt ) )
+void Interupt(void){
+    *( volatile uint64_t * )( TIMER_CTRL_ADDR + TIMER_MTIMECMP )+=843;
+    int adcr = adc_regular_data_read(ADC0); // ......get data                 // ......move data'
+    LCD_ShowNum(10,40,adcr,5,WHITE);
+    buffert[BuffPlace] = adcr;
+    BuffPlace = 1+BuffPlace;
+//    adc_software_trigger_enable(ADC0, //Trigger another ADC conversion!
+  //                            ADC_REGULAR_CHANNEL);
 
-	//Set samples to 20, which since we are using double buffers it will generate an interrupt every ten samples.
-	dma_config(sample_data, FILTERSIZE*4);
-
-	config_clic_irqs();
-
-	timer_enable(TIMER1);
-
-	timer_parameter_struct timer_initpara;
-
-	gpio_init(GPIOA, GPIO_MODE_OUT_PP, GPIO_OSPEED_50MHZ, GPIO_PIN_6); //output till LED
-
-	while(1){
-		
-		delay_1us(1);
-
-	}
-
-} 
-
-void rcu_config(void){
-    rcu_periph_clock_enable(RCU_ADC0);
-	rcu_periph_clock_enable(RCU_DMA0);
-
-	rcu_periph_clock_enable(RCU_TIMER1);
-
-	
-	rcu_periph_clock_enable(RCU_GPIOA);
-	rcu_periph_clock_enable(RCU_GPIOB);
-	rcu_periph_clock_enable(RCU_AF);
 }
